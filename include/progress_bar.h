@@ -1,11 +1,19 @@
+#include <chrono>
+#include <string>
+#include <iostream>
+
 class ProgressBar
 {
 public:
-  ProgressBar(){}
+  ProgressBar():
+    initialized_(false),
+    bar_id_(0)
+  {}
+
   ProgressBar(int total, int barwidth) :
     initialized_(false),
     barwidth_(barwidth),
-    total_(total)
+    bar_id_(0)
   {}
   
   ~ProgressBar()
@@ -19,12 +27,20 @@ public:
     barwidth_ = barwidth;
     total_ = total;
     last_completed_ = 0;
+    set_theme_random();
   }
 
-  void set_theme_line() { bars_ = {"─", "─", "─", "╾", "╾", "╾", "╾", "━", "═"}; }
-  void set_theme_circle() { bars_ = {" ", "◓", "◑", "◒", "◐", "◓", "◑", "◒", "#"}; }
-  void set_theme_braille() { bars_ = {" ", "⡀", "⡄", "⡆", "⡇", "⡏", "⡟", "⡿", "⣿" }; }
-  void set_theme_braille_spin() { bars_ = {" ", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠇", "⠿" }; }
+  int set_theme_random()
+  {
+     srand (time(NULL));
+     bar_id_ = rand() % bars_.size();
+  }
+
+  void set_theme_solid_bar() {bar_id_ = 0;}
+  void set_theme_line() { bar_id_ = 1; }
+  void set_theme_circle() { bar_id_ = 2; }
+  void set_theme_braille() { bar_id_ = 3; }
+  void set_theme_braille_spin() { bar_id_ = 4; }
   
   void print(int completed)
   {
@@ -45,9 +61,9 @@ public:
       std::cout << " \r [";
       double pos = barwidth_ * (completed / (double)total_);
       for (int i = 0; i < barwidth_; ++i)
-        if (i < floor(pos)) std::cout << *(bars_.end()-1);
-        else if (i == floor(pos)) std::cout << bars_[round((pos - floor(pos)) * (bars_.size() -1))];
-        else std::cout << " ";
+        if (i < floor(pos)) std::cout << *(bars_[bar_id_].end()-1);
+        else if (i == floor(pos)) std::cout << bars_[bar_id_][round((pos - floor(pos)) * (bars_[bar_id_].size() -1))];
+        else std::cout << bars_[bar_id_][0];
       std::cout << "]  ";
       printf("%.0f%% ", (completed / (double)total_)*100.0);
       double it_s = completed / elapsed;
@@ -95,7 +111,15 @@ private:
   int total_;
   bool initialized_;
   int last_completed_;
-  std::vector<const char*> bars_ = {" ", "▏", "▎", "▍", "▋", "▋", "▊", "▉", "▉", "█"};
+  int bar_id_;
+  std::vector< std::vector< const char*> > bars_{
+    {" ", "▏", "▎", "▍", "▋", "▋", "▊", "▉", "▉", "█"},
+    {"─", "─", "─", "╾", "╾", "╾", "╾", "━", "═"},
+    {" ", "◓", "◑", "◒", "◐", "◓", "◑", "◒", "#"},
+    {" ", ".", "o", "O", "0", "O", "o", ".", "█"},
+    {" ", "⡀", "⡄", "⡆", "⡇", "⡏", "⡟", "⡿", "⣿"},
+    {" ", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠇", "⠿"}};
+
   
   std::chrono::system_clock::time_point start_time_;
   std::chrono::system_clock::time_point last_print_time_;  

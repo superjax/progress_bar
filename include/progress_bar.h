@@ -8,13 +8,17 @@ public:
   ProgressBar():
     initialized_(false),
     bar_id_(0)
-  {}
+  {
+    set_theme_random();
+  }
 
   ProgressBar(int total, int barwidth) :
     initialized_(false),
     barwidth_(barwidth),
     bar_id_(0)
-  {}
+  {
+    set_theme_random();
+  }
   
   ~ProgressBar()
   {
